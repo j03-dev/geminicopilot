@@ -1,23 +1,53 @@
-# GeminiCopilot
+# GeminiCopilot: AI-Powered Coding Assistant
 
-GeminiCopilot is an AI-powered coding assistant that enhances developers' coding experience by providing intelligent suggestions and automating repetitive tasks. Built with natural language processing and machine learning, GeminiCopilot understands code context and can generate code that aligns with the developer's intent.
+## Introduction
 
-## Key Features
+GeminiCopilot is a cutting-edge AI-powered coding assistant designed to enhance your development workflow. It provides intelligent suggestions, automates repetitive tasks, and supports collaborative coding across various programming languages and frameworks.
 
-* **Intelligent Assistance:** Generate code suggestions, error detection, and optimization tips.
-* **Language Agnostic:** Supports multiple programming languages and frameworks.
-* **Adaptable:** Learns coding style and preferences to provide personalized suggestions.
-* **Efficiency:** Automates repetitive tasks like code generation and refactoring.
-* **Documentation Assistance:** Provides documentation and usage examples.
+## Features
 
-## Benefits
+* **Code Completion and Suggestion:** GeminiCopilot understands your code context and generates accurate and relevant suggestions to complete your code faster.
+* **Task Automation:** Automate repetitive tasks like code generation and refactoring, freeing you up to focus on more creative and strategic aspects of development.
+* **Language and Framework Support:** GeminiCopilot supports a wide range of programming languages and frameworks, ensuring flexibility and adaptability to your projects.
+* **Collaboration Support:** Facilitate collaborative coding by resolving merge conflicts and providing insights into team members' contributions.
 
-* **Increased Productivity:** Save time and effort by automating coding tasks.
-* **Improved Code Quality:** Generate high-quality code with fewer errors.
-* **Enhanced Learning:** Learn new coding techniques and best practices.
-* **Collaboration Support:** Facilitates collaborative coding among team members.
-* **Innovation Acceleration:** Explore new ideas and solutions with AI-powered assistance.
+## Installation
 
-## License
+### Prerequisites
+* Rust (stable)
 
-GeminiCopilot is licensed under the MIT License.
+### Rust Toolchain Installation
+
+```bash
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+```
+
+### GeminiCopilot Installation
+
+```bash
+git clone https://github.com/j03-dev/geminicopilot.git
+cd geminicopilot
+cargo build --release
+```
+
+## Usage
+
+### Configuration
+
+To configure GeminiCopilot, create a `.env` file in your project directory and add your API key:
+
+```bash
+API_KEY=<YOUR_API_KEY>
+```
+
+Get your API key from the GeminiCopilot dashboard: https://dashboard.generativelanguage.googleapis.com
+
+### Command-Line Interface
+
+GeminiCopilot provides a command-line interface (CLI) for convenient usage:
+
+```bash
+geminicopilot <text>
+```
+
+Replace `<text>` with the code snippet you need assistance with. GeminiCopilot will return suggestions and insights.

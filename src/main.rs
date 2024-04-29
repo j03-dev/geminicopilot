@@ -148,7 +148,7 @@ async fn main() -> Result<()> {
 
     // Specify the directory you want to walk
     let current_dir = ".";
-    let mut ignore_list = Vec::new();
+    let mut ignore_list = vec!["./.git/".to_string()];
     walk_gitignore(Path::new(current_dir), &mut ignore_list)?;
 
     let mut current_directory_content = String::new();
