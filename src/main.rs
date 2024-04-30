@@ -105,16 +105,14 @@ fn walk_directory(dir_path: &Path, all_content: &mut String, ignore_list: &[Stri
         let path = entry.path();
         if path.is_dir() {
             walk_directory(&path, all_content, ignore_list)?;
-        } else {
-            if let Some(file_content) = read_file_content(&path)? {
-                let dir_path_str = path
-                    .parent()
-                    .ok_or("Failed to get parent directory")?
-                    .to_string_lossy();
-                all_content.push_str(&format!("Directory: {}\n", dir_path_str));
-                all_content.push_str(&file_content);
-                all_content.push_str("\n\n");
-            }
+        } else if let Some(file_content) = read_file_content(&path)? {
+            let dir_path_str = path
+                .parent()
+                .ok_or("Failed to get parent directory")?
+                .to_string_lossy();
+            all_content.push_str(&format!("Directory: {}\n", dir_path_str));
+            all_content.push_str(&file_content);
+            all_content.push_str("\n\n");
         }
     }
     Ok(())
