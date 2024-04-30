@@ -79,7 +79,7 @@ async fn ask_gemini(text: String) -> Result<Response> {
         contents: vec![Content {
             role: "user".to_owned(),
             parts: vec![Part {
-                text: format!("{PROMPT}: {text}"),
+                text: format!("{PROMPT}:\n{text}"),
             }],
         }],
     };
@@ -117,11 +117,10 @@ fn walk_directory(dir_path: &Path, all_content: &mut String, ignore_list: &[Stri
         if path.is_dir() {
             walk_directory(&path, all_content, ignore_list)?;
         } else if let Some(file_content) = read_file_content(&path)? {
-            let dir_path_str = path
-                .parent()
-                .ok_or("Failed to get parent directory")?
-                .to_string_lossy();
-            all_content.push_str(&format!("Directory: {}\n", dir_path_str));
+            all_content.push_str(&format!(
+                "Directory: {}\n",
+                path.to_str().unwrap_or("Failed to get parent directory")
+            ));
             all_content.push_str(&file_content);
             all_content.push_str("\n\n");
         }
@@ -133,15 +132,11 @@ fn walk_gitignore(dir_path: &Path, ignore_list: &mut Vec<String>) -> Result<()> 
     let gitignore_path = dir_path.join(".gitignore");
     if gitignore_path.exists() {
         let gitignore_content = fs::read_to_string(gitignore_path)?;
-        ignore_list.extend(gitignore_content.lines().map(|s| s.to_owned()));
-    }
-
-    for entry in fs::read_dir(dir_path)? {
-        let entry = entry?;
-        let path = entry.path();
-        if path.is_dir() {
-            walk_gitignore(&path, ignore_list)?;
-        }
+        ignore_list.extend(
+            gitignore_content
+                .lines()
+                .map(|s| dir_path.join(s).to_str().unwrap().into()),
+        );
     }
     Ok(())
 }
@@ -158,7 +153,7 @@ async fn main() -> Result<()> {
     let user_input_text = &args[1];
 
     let current_dir = ".";
-    let mut ignore_list = vec![".git/".to_owned()];
+    let mut ignore_list = vec!["./.git/".to_owned()];
     walk_gitignore(Path::new(current_dir), &mut ignore_list)?;
 
     let mut current_directory_content = String::new();
@@ -170,7 +165,7 @@ async fn main() -> Result<()> {
     )?;
 
     let response = ask_gemini(format!(
-        "{current_directory_content}\n:**and this is the directive**  => {user_input_text}"
+        "{current_directory_content}\n\n:**and this is the directive**  => {user_input_text}"
     ))
     .await?;
     for part in response.candidates[0].content.parts.clone() {
