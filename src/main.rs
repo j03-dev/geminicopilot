@@ -92,6 +92,17 @@ async fn ask_gemini(text: String) -> Result<Response> {
     Ok(response.json().await?)
 }
 
+fn read_file_content(file_path: &Path) -> Result<Option<String>> {
+    let mut file = fs::File::open(file_path)?;
+    let mut content = String::new();
+    if let Err(err) = file.read_to_string(&mut content) {
+        eprintln!("{err} => {path}", path = file_path.to_str().unwrap());
+        exit(100);
+    }
+
+    Ok(Some(content))
+}
+
 fn walk_directory(dir_path: &Path, all_content: &mut String, ignore_list: &[String]) -> Result<()> {
     if ignore_list
         .iter()
@@ -118,40 +129,40 @@ fn walk_directory(dir_path: &Path, all_content: &mut String, ignore_list: &[Stri
     Ok(())
 }
 
-// Function to read the content of a file
-fn read_file_content(file_path: &Path) -> Result<Option<String>> {
-    // Read the file's contents into a string
-    let mut file = fs::File::open(file_path)?;
-    let mut content = String::new();
-    if let Err(err) = file.read_to_string(&mut content) {
-        eprintln!("{err} => {path}", path = file_path.to_str().unwrap());
-        exit(100);
+fn walk_gitignore(dir_path: &Path, ignore_list: &mut Vec<String>) -> Result<()> {
+    let gitignore_path = dir_path.join(".gitignore");
+    if gitignore_path.exists() {
+        let gitignore_content = fs::read_to_string(gitignore_path)?;
+        ignore_list.extend(gitignore_content.lines().map(|s| s.to_owned()));
     }
 
-    Ok(Some(content))
+    for entry in fs::read_dir(dir_path)? {
+        let entry = entry?;
+        let path = entry.path();
+        if path.is_dir() {
+            walk_gitignore(&path, ignore_list)?;
+        }
+    }
+    Ok(())
 }
 
 #[tokio::main]
 async fn main() -> Result<()> {
     let args: Vec<String> = std::env::args().collect();
 
-    // Check if there are enough arguments
     if args.len() < 2 {
         eprintln!("Usage: {} <input_text>", args[0]);
         std::process::exit(1);
     }
 
-    // Extract user input text from arguments
     let user_input_text = &args[1];
 
-    // Specify the directory you want to walk
     let current_dir = ".";
-    let mut ignore_list = vec!["./.git/".to_string()];
+    let mut ignore_list = vec![".git/".to_owned()];
     walk_gitignore(Path::new(current_dir), &mut ignore_list)?;
 
     let mut current_directory_content = String::new();
 
-    // Recursively walk the directory
     walk_directory(
         Path::new(current_dir),
         &mut current_directory_content,
@@ -164,23 +175,6 @@ async fn main() -> Result<()> {
     .await?;
     for part in response.candidates[0].content.parts.clone() {
         println!("{}", part.text);
-    }
-    Ok(())
-}
-
-fn walk_gitignore(dir_path: &Path, ignore_list: &mut Vec<String>) -> Result<()> {
-    let gitignore_path = dir_path.join(".gitignore");
-    if gitignore_path.exists() {
-        let gitignore_content = fs::read_to_string(gitignore_path)?;
-        ignore_list.extend(gitignore_content.lines().map(|s| format!("./{s}")));
-    }
-
-    for entry in fs::read_dir(dir_path)? {
-        let entry = entry?;
-        let path = entry.path();
-        if path.is_dir() {
-            walk_gitignore(&path, ignore_list)?;
-        }
     }
     Ok(())
 }
